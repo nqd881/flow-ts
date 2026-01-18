@@ -6,39 +6,24 @@ export class ForEachStepExecutor implements IStepExecutor<ForEachStepDef> {
   async execute(execution: IStepExecution<ForEachStepDef>): Promise<any> {
     const { client, stepDef, context } = execution;
 
-    const items = await stepDef.items(context);
+    const items = await stepDef.itemsSelector(context);
 
-    let index = 0;
-
-    for await (const item of this.toAsyncIterable(items)) {
+    for (const item of items) {
       this.ensureNotStopped(execution);
 
-      const itemContext = stepDef.createItemContext(context, item, index);
-      const flowExecution = client.runFlow(stepDef.body, itemContext);
+      const branchContext = stepDef.adapt
+        ? await stepDef.adapt(context, item)
+        : context;
+
+      const flowExecution = client.createFlowExecution(
+        stepDef.body,
+        branchContext
+      );
 
       execution.onStopRequested(() => flowExecution.requestStop());
 
       await flowExecution.start();
-      await flowExecution.waitUntilFinished();
-
-      index += 1;
-
-      this.ensureNotStopped(execution);
     }
-  }
-
-  protected toAsyncIterable<T>(
-    items: Iterable<T> | AsyncIterable<T>
-  ): AsyncIterable<T> {
-    if (typeof (items as any)[Symbol.asyncIterator] === "function") {
-      return items as AsyncIterable<T>;
-    }
-
-    return (async function* () {
-      for (const item of items as Iterable<T>) {
-        yield item;
-      }
-    })();
   }
 
   protected ensureNotStopped(execution: IStepExecution) {

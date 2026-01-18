@@ -1,23 +1,23 @@
-import { IFlowDef, IFlowExecutionContext } from "../../abstraction";
-import { CasePredicate, Selector } from "../types";
+import { IFlowExecutionContext } from "../../abstraction";
+import { Branch, Predicate, Selector } from "../types";
 import { StepDef } from "./step-def";
 
 export interface SwitchCase<
   TContext extends IFlowExecutionContext = IFlowExecutionContext,
+  TBranchContext extends IFlowExecutionContext = IFlowExecutionContext,
   TValue = unknown
-> {
-  readonly predicate: CasePredicate<TContext, TValue>;
-  readonly flow: IFlowDef;
+> extends Branch<TContext, TBranchContext> {
+  readonly predicate: Predicate<TContext, TValue>;
 }
 
 export class SwitchStepDef<
   TContext extends IFlowExecutionContext = IFlowExecutionContext,
   TValue = unknown
-> extends StepDef {
+> extends StepDef<TContext> {
   constructor(
     public readonly selector: Selector<TContext, TValue>,
-    public readonly cases: Array<SwitchCase<TContext, TValue>>,
-    public readonly defaultBranch?: IFlowDef,
+    public readonly cases: SwitchCase<TContext, any, TValue>[],
+    public readonly defaultBranch?: Branch<TContext>,
     id?: string
   ) {
     super(id);

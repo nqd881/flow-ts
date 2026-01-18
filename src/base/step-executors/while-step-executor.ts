@@ -9,12 +9,18 @@ export class WhileStepExecutor implements IStepExecutor<WhileStepDef> {
     while (await stepDef.condition(context)) {
       this.ensureNotStopped(execution);
 
-      const flowExecution = client.runFlow(stepDef.body, context);
+      const branchContext = stepDef.adapt
+        ? await stepDef.adapt(context)
+        : context;
+
+      const flowExecution = client.createFlowExecution(
+        stepDef.body,
+        branchContext
+      );
 
       execution.onStopRequested(() => flowExecution.requestStop());
 
       await flowExecution.start();
-      await flowExecution.waitUntilFinished();
 
       this.ensureNotStopped(execution);
     }

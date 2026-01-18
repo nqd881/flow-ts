@@ -1,4 +1,5 @@
 import {
+  IFlowDef,
   IFlowExecution,
   IFlowExecutionContext,
   IFlowExecutor,
@@ -25,7 +26,9 @@ import {
   WhileStepExecutor,
 } from "./step-executors";
 
-export class FlowExecutor implements IFlowExecutor {
+export class FlowExecutor<TFlow extends IFlowDef>
+  implements IFlowExecutor<TFlow>
+{
   createStepExecution(
     client: IClient,
     step: IStepDef,
@@ -39,7 +42,7 @@ export class FlowExecutor implements IFlowExecutor {
     );
   }
 
-  async execute(flowExecution: IFlowExecution): Promise<any> {
+  async execute(flowExecution: IFlowExecution<TFlow>): Promise<any> {
     const { client, flowDef, context } = flowExecution;
 
     let stopRequested = false;

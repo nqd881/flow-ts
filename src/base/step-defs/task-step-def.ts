@@ -3,9 +3,9 @@ import { AnyTask, Task } from "../types";
 import { StepDef } from "./step-def";
 
 export class TaskStepDef<
-  TTask extends Task<TContext> = AnyTask,
-  TContext extends IFlowExecutionContext = IFlowExecutionContext
-> extends StepDef {
+  TContext extends IFlowExecutionContext = IFlowExecutionContext,
+  TTask extends Task<TContext> = AnyTask
+> extends StepDef<TContext> {
   constructor(public readonly task: TTask) {
     super();
   }

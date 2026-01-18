@@ -2,8 +2,8 @@ import {
   FlowExecutionStatus,
   IFlowDef,
   IFlowExecution,
-  IFlowExecutionContext,
   IFlowExecutor,
+  InferredContext,
 } from "../abstraction";
 import { IClient } from "../abstraction/client";
 
@@ -13,8 +13,8 @@ export class FlowStoppedError extends Error {
   }
 }
 
-export class FlowExecution<TFlowDef extends IFlowDef = IFlowDef>
-  implements IFlowExecution
+export class FlowExecution<TFlow extends IFlowDef = IFlowDef>
+  implements IFlowExecution<TFlow>
 {
   protected status: FlowExecutionStatus = FlowExecutionStatus.Pending;
   protected stopRequested = false;
@@ -27,9 +27,9 @@ export class FlowExecution<TFlowDef extends IFlowDef = IFlowDef>
 
   constructor(
     public readonly client: IClient,
-    public readonly executor: IFlowExecutor,
-    public readonly flowDef: TFlowDef,
-    public readonly context: IFlowExecutionContext
+    public readonly executor: IFlowExecutor<TFlow>,
+    public readonly flowDef: TFlow,
+    public readonly context: InferredContext<TFlow>
   ) {
     this.init();
   }

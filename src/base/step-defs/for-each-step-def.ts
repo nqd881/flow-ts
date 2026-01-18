@@ -1,30 +1,16 @@
 import { IFlowDef, IFlowExecutionContext } from "../../abstraction";
-import { ItemContext, ItemContextFactory, ItemsProvider } from "../types";
+import { BranchAdapter, Selector } from "../types";
 import { StepDef } from "./step-def";
-
-const defaultItemContextFactory = <
-  TContext extends IFlowExecutionContext,
-  TItem,
-  TItemContext extends IFlowExecutionContext = ItemContext<TContext, TItem>
->(
-  context: TContext,
-  item: TItem,
-  index: number
-) => ({ ...(context as any), item, index } as TItemContext);
 
 export class ForEachStepDef<
   TContext extends IFlowExecutionContext = IFlowExecutionContext,
-  TItem = unknown,
-  TItemContext extends IFlowExecutionContext = ItemContext<TContext, TItem>
-> extends StepDef {
+  TBranchContext extends IFlowExecutionContext = IFlowExecutionContext,
+  TItem = unknown
+> extends StepDef<TContext> {
   constructor(
-    public readonly items: ItemsProvider<TContext, TItem>,
-    public readonly body: IFlowDef,
-    public readonly createItemContext: ItemContextFactory<
-      TContext,
-      TItem,
-      TItemContext
-    > = defaultItemContextFactory,
+    public readonly itemsSelector: Selector<TContext, TItem[]>,
+    public readonly body: IFlowDef<TBranchContext>,
+    public readonly adapt?: BranchAdapter<TContext, TBranchContext, [TItem]>,
     id?: string
   ) {
     super(id);

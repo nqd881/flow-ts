@@ -1,4 +1,8 @@
-import { IStepExecution, IStepExecutor } from "../../abstraction";
+import {
+  IFlowExecution,
+  IStepExecution,
+  IStepExecutor,
+} from "../../abstraction";
 import { ParallelStepStrategy } from "../step-defs/parallel-step-def";
 import { ParallelForEachStepDef } from "../step-defs/parallel-for-each-step-def";
 import { StepStoppedError } from "../step-execution";
@@ -6,43 +10,44 @@ import { StepStoppedError } from "../step-execution";
 export class ParallelForEachStepExecutor
   implements IStepExecutor<ParallelForEachStepDef>
 {
-  async execute(execution: IStepExecution<ParallelForEachStepDef>): Promise<any> {
+  async execute(
+    execution: IStepExecution<ParallelForEachStepDef>
+  ): Promise<any> {
     const { client, stepDef, context } = execution;
 
-    const items = await stepDef.items(context);
+    const flowExecutions: IFlowExecution[] = [];
 
-    const tasks: Promise<any>[] = [];
-    let index = 0;
+    const items = await stepDef.itemsSelector(context);
 
-    for await (const item of this.toAsyncIterable(items)) {
+    for (const item of items) {
       this.ensureNotStopped(execution);
 
-      const itemContext = stepDef.createItemContext(context, item, index);
-      const flowExecution = client.runFlow(stepDef.body, itemContext);
+      const itemContext = stepDef.adapt
+        ? await stepDef.adapt(context, item)
+        : context;
 
-      execution.onStopRequested(() => flowExecution.requestStop());
+      const flowExecution = client.createFlowExecution(
+        stepDef.body,
+        itemContext
+      );
 
-      const task = (async () => {
-        await flowExecution.start();
-        await flowExecution.waitUntilFinished();
-      })();
-
-      tasks.push(task);
-      index += 1;
+      flowExecutions.push(flowExecution);
     }
+
+    const start = () => flowExecutions.map((fe) => fe.start());
 
     switch (stepDef.strategy) {
       case ParallelStepStrategy.FailFast: {
-        await Promise.all(tasks);
+        await Promise.all(start());
         break;
       }
       case ParallelStepStrategy.FirstCompleted: {
-        await Promise.race(tasks);
+        await Promise.race(start());
         break;
       }
       case ParallelStepStrategy.CollectAll:
       default: {
-        await Promise.allSettled(tasks);
+        await Promise.allSettled(start());
         break;
       }
     }

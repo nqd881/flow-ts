@@ -13,17 +13,23 @@ export class SwitchStepExecutor implements IStepExecutor<SwitchStepDef> {
     const { client, stepDef, context } = execution;
 
     const selected = await stepDef.selector(context);
-    const matchedCase = await this.findMatchingCase(stepDef.cases, selected, context);
-    const branch = matchedCase?.flow ?? stepDef.defaultBranch;
+    const matchedCase = await this.findMatchingCase(
+      stepDef.cases,
+      selected,
+      context
+    );
+    const branchFlow = matchedCase?.flow ?? stepDef.defaultBranch?.flow;
+    const branchCtx = matchedCase?.adapt
+      ? await matchedCase.adapt(context)
+      : context;
 
-    if (!branch) return;
+    if (!branchFlow) return;
 
-    const flowExecution = client.runFlow(branch, context);
+    const flowExecution = client.createFlowExecution(branchFlow, branchCtx);
 
     execution.onStopRequested(() => flowExecution.requestStop());
 
     await flowExecution.start();
-    await flowExecution.waitUntilFinished();
 
     this.ensureNotStopped(execution);
   }
@@ -32,10 +38,10 @@ export class SwitchStepExecutor implements IStepExecutor<SwitchStepDef> {
     TContext extends IFlowExecutionContext,
     TValue
   >(
-    cases: Array<SwitchCase<TContext, TValue>>,
+    cases: SwitchCase<TContext, any, TValue>[],
     value: TValue,
     context: TContext
-  ): Promise<SwitchCase<TContext, TValue> | undefined> {
+  ): Promise<SwitchCase<TContext, any, TValue> | undefined> {
     for (const currentCase of cases) {
       if (await currentCase.predicate(value, context)) {
         return currentCase;

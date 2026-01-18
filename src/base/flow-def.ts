@@ -1,15 +1,25 @@
-import { IFlowDef, IStepDef } from "../abstraction";
 import { v4 } from "uuid";
-import { FlowBuilderClient, FlowDefBuilder } from "./flow-def-builder";
+import {
+  CONTEXT_TYPE,
+  IFlowDef,
+  IFlowExecutionContext,
+  IStepDef,
+} from "../abstraction";
+import { FlowDefBuilder, IFlowBuilderClient } from "./flow-def-builder";
 
-export class FlowDef implements IFlowDef {
-  static builder(client: FlowBuilderClient) {
+export class FlowDef<
+  TContext extends IFlowExecutionContext = IFlowExecutionContext
+> implements IFlowDef<TContext>
+{
+  readonly [CONTEXT_TYPE]!: TContext;
+
+  static builder(client: IFlowBuilderClient) {
     return new FlowDefBuilder(client);
   }
 
   public readonly id: string;
 
-  constructor(public readonly steps: IStepDef[]) {
+  constructor(public readonly steps: IStepDef<TContext>[]) {
     this.id = v4();
   }
 }

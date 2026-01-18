@@ -1,13 +1,13 @@
 import { IFlowExecutionContext } from "../abstraction";
-import { FlowBuilderClient, FlowDefBuilder } from "../base/flow-def-builder";
+import { IFlowBuilderClient, FlowDefBuilder } from "../base/flow-def-builder";
 import { Compensation } from "./compensation";
 import { CompensationMap } from "./compensation-map";
 import { SagaDef } from "./saga-def";
 
 export class SagaDefBuilder<
-  TContext extends IFlowExecutionContext = IFlowExecutionContext,
-  TClient extends FlowBuilderClient = FlowBuilderClient
-> extends FlowDefBuilder<TContext, TClient> {
+  TClient extends IFlowBuilderClient = IFlowBuilderClient,
+  TContext extends IFlowExecutionContext = IFlowExecutionContext
+> extends FlowDefBuilder<TClient, TContext> {
   protected preCompensationMap = new Map<number, Compensation>();
   protected commitPoint?: number;
 
@@ -44,6 +44,6 @@ export class SagaDefBuilder<
       ? steps[this.commitPoint]!.id
       : undefined;
 
-    return new SagaDef(steps, compensationMap, pivotStepId);
+    return new SagaDef<TContext>(steps, compensationMap, pivotStepId);
   }
 }

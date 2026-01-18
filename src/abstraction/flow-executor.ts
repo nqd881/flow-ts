@@ -1,5 +1,6 @@
+import { IFlowDef } from "./flow-def";
 import { IFlowExecution } from "./flow-execution";
 
-export interface IFlowExecutor {
-  execute(flowExecution: IFlowExecution): Promise<any>;
+export interface IFlowExecutor<TFlow extends IFlowDef> {
+  execute(flowExecution: IFlowExecution<TFlow>): Promise<any>;
 }

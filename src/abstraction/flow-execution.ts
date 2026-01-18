@@ -1,11 +1,10 @@
 import { IClient } from "./client";
-import { IFlowDef } from "./flow-def";
-import { IFlowExecutionContext } from "./flow-execution-context";
+import { IFlowDef, InferredContext } from "./flow-def";
 
 export interface IFlowExecution<TFlowDef extends IFlowDef = IFlowDef> {
   readonly client: IClient;
   readonly flowDef: TFlowDef;
-  readonly context: IFlowExecutionContext;
+  readonly context: InferredContext<TFlowDef>;
 
   start(): Promise<void>;
   requestStop(): void;

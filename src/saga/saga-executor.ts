@@ -1,8 +1,15 @@
-import { IFlowExecution, IStepExecution, StepExecutionStatus } from "../abstraction";
+import {
+  IFlowDef,
+  IFlowExecution,
+  IStepExecution,
+  StepExecutionStatus,
+} from "../abstraction";
 import { FlowExecutor } from "../base/flow-executor";
 import { SagaExecution } from "./saga-execution";
 
-export class SagaExecutor extends FlowExecutor {
+export class SagaExecutor<
+  TSagaFlow extends IFlowDef
+> extends FlowExecutor<TSagaFlow> {
   override beforeStepStart(
     flowExecution: IFlowExecution,
     stepExecution: IStepExecution

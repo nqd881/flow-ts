@@ -1,4 +1,5 @@
-import { IFlowDef } from "../../abstraction";
+import { IFlowDef, IFlowExecutionContext } from "../../abstraction";
+import { Branch } from "../types";
 import { StepDef } from "./step-def";
 
 export enum ParallelStepStrategy {
@@ -7,9 +8,11 @@ export enum ParallelStepStrategy {
   FirstCompleted = "first-completed",
 }
 
-export class ParallelStepDef extends StepDef {
+export class ParallelStepDef<
+  TContext extends IFlowExecutionContext = IFlowExecutionContext
+> extends StepDef<TContext> {
   constructor(
-    public readonly branches: IFlowDef[],
+    public readonly branches: Branch<TContext, any>[],
     public readonly strategy: ParallelStepStrategy = ParallelStepStrategy.CollectAll,
     id?: string
   ) {

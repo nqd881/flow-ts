@@ -1,11 +1,13 @@
-import { IStepDef } from "../abstraction";
+import { IFlowExecutionContext, IStepDef } from "../abstraction";
 import { FlowDef } from "../base/flow-def";
-import { FlowBuilderClient } from "../base/flow-def-builder";
+import { IFlowBuilderClient } from "../base/flow-def-builder";
 import { CompensationMap } from "./compensation-map";
 import { SagaDefBuilder } from "./saga-def-builder";
 
-export class SagaDef extends FlowDef {
-  static builder(client: FlowBuilderClient) {
+export class SagaDef<
+  TContext extends IFlowExecutionContext = IFlowExecutionContext
+> extends FlowDef<TContext> {
+  static builder(client: IFlowBuilderClient) {
     return new SagaDefBuilder(client);
   }
 
@@ -13,7 +15,7 @@ export class SagaDef extends FlowDef {
   public readonly pivotStepId?: string;
 
   constructor(
-    steps: IStepDef[],
+    steps: IStepDef<TContext>[],
     compensationMap: CompensationMap,
     pivotStepId?: string
   ) {

@@ -1,13 +1,15 @@
 import { IFlowDef, IFlowExecutionContext } from "../../abstraction";
-import { Condition } from "../types";
+import { BranchAdapter, Condition } from "../types";
 import { StepDef } from "./step-def";
 
 export class WhileStepDef<
-  TContext extends IFlowExecutionContext = IFlowExecutionContext
-> extends StepDef {
+  TContext extends IFlowExecutionContext = IFlowExecutionContext,
+  TBranchContext extends IFlowExecutionContext = IFlowExecutionContext
+> extends StepDef<TContext> {
   constructor(
     public readonly condition: Condition<TContext>,
-    public readonly body: IFlowDef,
+    public readonly body: IFlowDef<TBranchContext>,
+    public readonly adapt?: BranchAdapter<TContext, TBranchContext>,
     id?: string
   ) {
     super(id);

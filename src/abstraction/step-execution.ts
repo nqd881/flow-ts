@@ -1,12 +1,12 @@
 import { IClient } from "./client";
-import { IFlowExecutionContext } from "./flow-execution-context";
+import { InferredContext } from "./flow-def";
 import { IStepDef } from "./step-def";
 import { StepExecutionStatus } from "./step-execution-status";
 
 export interface IStepExecution<TStep extends IStepDef = IStepDef> {
   readonly client: IClient;
   readonly stepDef: TStep;
-  readonly context: IFlowExecutionContext;
+  readonly context: InferredContext<TStep>;
 
   getStatus(): StepExecutionStatus;
   getError(): unknown | undefined;
