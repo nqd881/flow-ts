@@ -43,7 +43,6 @@ const rollbackFinalize: Compensation = async (ctx: unknown) => {
   console.log("parent: rollback finalize", c.orderId);
 };
 
-// Reused saga: payment workflow
 const paymentSaga = client
   .newSaga<Ctx>()
   .task((ctx) => {
@@ -57,7 +56,6 @@ const paymentSaga = client
   .commit()
   .build();
 
-// Parent saga mixes inline factories + reused flows with adapters
 const parentSaga = client
   .newSaga<Ctx>()
   .if(
@@ -71,7 +69,7 @@ const parentSaga = client
       client
         .newFlow<Ctx>()
         .task((ctx) => console.log("not approved, halt", ctx.orderId))
-        .build()
+        .build(),
   )
   .parallel()
   // Inline flow from factory, adapt parent ctx to ship ctx
@@ -84,14 +82,14 @@ const parentSaga = client
     client
       .newFlow<Ctx>()
       .task(() => console.log("xD"))
-      .build()
+      .build(),
   )
   .all()
   .join()
   .forEach(() => [1, 2, 3])
   .run(
     (client) => client.newFlow().build(),
-    (ctx, item) => ({})
+    (ctx, item) => ({}),
   )
   .then()
   .parallelForEach((ctx) => [1, 2, "3"])
@@ -103,7 +101,7 @@ const parentSaga = client
         .build(),
     (ctx, item) => {
       return {};
-    }
+    },
   )
   .join()
   .build();
