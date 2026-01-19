@@ -12,25 +12,19 @@ import { BranchAdapter, Condition, FlowFactory, Selector, Task } from "./types";
 
 export interface IFlowBuilderClient {
   newFlow<
-    TContext extends IFlowExecutionContext = IFlowExecutionContext
+    TContext extends IFlowExecutionContext = IFlowExecutionContext,
   >(): FlowDefBuilder<any, TContext>;
 }
 
 export class FlowDefBuilder<
   TClient extends IFlowBuilderClient = IFlowBuilderClient,
-  TContext extends IFlowExecutionContext = IFlowExecutionContext
+  TContext extends IFlowExecutionContext = IFlowExecutionContext,
 > {
   protected steps: Array<
     IStepDef<TContext> | IStepDefBuilder<IStepDef<TContext>>
   > = [];
 
   constructor(protected readonly client: TClient) {}
-
-  // apply(setup: FlowSetup<TContext>) {
-  //   setup(this);
-
-  //   return this;
-  // }
 
   addStep(step: IStepDef<TContext> | IStepDefBuilder<IStepDef<TContext>>) {
     this.steps.push(step);
@@ -46,7 +40,7 @@ export class FlowDefBuilder<
   parallel() {
     const stepBuilder = new ParallelStepDefBuilder<TClient, TContext>(
       this,
-      this.client
+      this.client,
     );
 
     this.addStep(stepBuilder);
@@ -57,7 +51,7 @@ export class FlowDefBuilder<
   while<TBranchContext extends IFlowExecutionContext = IFlowExecutionContext>(
     condition: Condition<TContext>,
     provider: IFlowDef<TBranchContext> | FlowFactory<TClient, TBranchContext>,
-    adapt?: BranchAdapter<TContext, TBranchContext>
+    adapt?: BranchAdapter<TContext, TBranchContext>,
   ) {
     const body =
       typeof provider === "function" ? provider(this.client) : provider;
@@ -70,7 +64,7 @@ export class FlowDefBuilder<
   if(
     condition: Condition<TContext>,
     trueCase: IFlowDef<TContext> | FlowFactory<TClient, TContext>,
-    elseCase?: IFlowDef<TContext> | FlowFactory<TClient, TContext>
+    elseCase?: IFlowDef<TContext> | FlowFactory<TClient, TContext>,
   ) {
     const trueFlow =
       typeof trueCase === "function" ? trueCase(this.client) : trueCase;
@@ -85,7 +79,7 @@ export class FlowDefBuilder<
           flow: trueFlow,
         },
       ],
-      elseFlow ? { flow: elseFlow } : undefined
+      elseFlow ? { flow: elseFlow } : undefined,
     );
 
     this.addStep(step);
@@ -97,7 +91,7 @@ export class FlowDefBuilder<
     const stepBuilder = new SwitchStepDefBuilder<TClient, TContext, TValue>(
       this,
       this.client,
-      selector
+      selector,
     );
 
     this.addStep(stepBuilder);
@@ -117,7 +111,7 @@ export class FlowDefBuilder<
     const stepBuilder = new ParallelForEachStepDefBuilder(
       this,
       this.client,
-      items
+      items,
     );
 
     this.addStep(stepBuilder);
@@ -127,7 +121,7 @@ export class FlowDefBuilder<
 
   protected buildSteps(): IStepDef<TContext>[] {
     return this.steps.map((step) =>
-      "build" in step ? step.build() : step
+      "build" in step ? step.build() : step,
     ) as IStepDef<TContext>[];
   }
 
